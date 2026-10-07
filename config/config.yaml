@@ -1,0 +1,57 @@
+# =========================================================
+# Alaska Wildfire Risk Prediction — central configuration
+# =========================================================
+
+project:
+  name: "alaska-wildfire-cnn-lstm"
+  seed: 42
+
+data:
+  use_synthetic: true          # flip to false once GEE credentials + AOI are configured
+  n_samples: 1200               # synthetic samples (~ patches across Alaska)
+  patch_size: 32                # spatial patch size (pixels) per sample
+  n_optical_bands: 4            # Sentinel-2 subset: R,G,NIR,SWIR -> used for NDVI/NBR/EVI/NDMI
+  n_sar_bands: 2                # Sentinel-1: VV, VH
+  n_thermal_bands: 1            # MODIS/VIIRS fire radiative power / brightness temp
+  weather_seq_len: 30           # days of ERA5/NOAA weather history per sample
+  n_weather_features: 5         # temp, wind speed, humidity, precip, dewpoint
+  horizons: [1, 3, 6]           # prediction horizons in months
+  classes: ["NO_RISK", "MODERATE", "HIGH"]
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
+
+split:
+  train: 0.70
+  val: 0.15
+  test: 0.15
+  spatial_blocking: true        # block by spatial tile to prevent leakage, per methodology
+
+model:
+  cnn_out_channels: [16, 32, 64]
+  lstm_hidden_size: 64
+  lstm_num_layers: 1
+  fusion_hidden_size: 128
+  dropout: 0.3
+  num_classes: 3
+
+training:
+  batch_size: 32
+  epochs: 20
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  use_focal_loss: true
+  focal_gamma: 2.0
+  oversample_minority: true
+  early_stopping_patience: 5
+  checkpoint_dir: "outputs/checkpoints"
+  figures_dir: "outputs/figures"
+
+evaluation:
+  target_accuracy: 0.88         # from research targets
+  target_macro_f1: 0.82
+
+dashboard:
+  default_horizon: 1
+  map_center_lat: 64.2008
+  map_center_lon: -149.4937
+  map_zoom: 4

@@ -1,0 +1,6 @@
+data/processed/*.npz
+data/raw/*
+.venv/
+__pycache__/
+outputs/checkpoints/*.pt
+.pytest_cache/
